@@ -1,0 +1,2 @@
+class Viziwiki::EdgeTemplate
+end

@@ -1,14 +1,42 @@
 class Viziwiki::Fact
-  def initialize(edge, main_operators, role_operators, context)
-    @edge = edge
-    @main_op = main_operators
-    @role_op = role_operators
+  def initialize(context)
+    @edge = nil
+    @main_op = []
+    @role_op = []
 
+    set_context context
     set_fact_name nil
     set_location nil, nil, nil
     set_edge_template nil
   end
 
+  def edge
+    @edge
+  end
+
+  def main_op
+    @main_op
+  end
+
+  def role_op
+    @role_op
+  end
+
+  def name
+    @name
+  end
+
+  def location
+    [@file, @offset, @line]
+  end
+
+  def edge_template
+    @edge_template
+  end
+
+  def set_context context
+    @context = context
+  end
 
   def set_fact_name name
     @name = name
@@ -24,6 +52,18 @@ class Viziwiki::Fact
     @edge_template = nil
   end
 
+  def set_edge edge
+    @edge = edge
+  end
+
+  def add_main_op op
+    @main_op.push op
+  end
+
+  def add_role_op op
+    @role_op.push op
+  end
+
 
   def valid?
     has_edge? and has_name? and @main_op.size > 0
@@ -36,6 +76,7 @@ class Viziwiki::Fact
   def has_name?
     @name != nil
   end
+
 
   def to_s
     # if edge_template

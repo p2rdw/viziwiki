@@ -1,6 +1,8 @@
-require "viziwiki/version"
+require 'viziwiki/version'
+require 'securerandom'
 
 module Viziwiki
-  class Error < StandardError; end
-  # Your code goes here...
+  def new_uuid
+    SecureRandom.uuid
+  end
 end
