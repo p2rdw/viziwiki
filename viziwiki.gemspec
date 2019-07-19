@@ -25,9 +25,14 @@ Gem::Specification.new do |spec|
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   end
   spec.bindir        = "bin"
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.executables   = %w(
+    viziwiki_console
+    sample_creator.rb
+  )
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "mediawiki_api", "~> 0.7.1"
+  spec.add_dependency "nokogiri", "~> 1.10"
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest", "~> 5.0"

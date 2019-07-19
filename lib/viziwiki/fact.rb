@@ -1,14 +1,38 @@
 class Viziwiki::Fact
-  def initialize(context)
+  def initialize
     @edge = nil
     @main_op = []
     @role_op = []
 
-    set_context context
-    set_fact_name nil
+    @current_node = nil
+
+    set_fact_name! nil
     set_location nil, nil, nil
-    set_edge_template nil
   end
+
+
+  def add_fact_node node
+    if node.is_edge?
+      if has_edge?
+        raise TypeError, "trying to add a edge node: #{node} into an already edged fact: #{inspect}"
+      else
+        @edge = node
+      end
+    elsif node.is_main_operator?
+      @main_op.push node
+      @current_node = node
+    elsif node.is_role_operator?
+      @role_op.push node
+      @current_node = node
+    elsif node.is_functor? and @current_node
+      @current_node.add_functor_node node
+      @current_node = node
+    elsif node.is_informative? and @current_node
+      @current_node.add_informative_node node
+    end
+    node
+  end
+
 
   def edge
     @edge
@@ -30,26 +54,31 @@ class Viziwiki::Fact
     [@file, @offset, @line]
   end
 
-  def edge_template
-    @edge_template
+
+
+
+
+  def set_uuid! uuid
+    set_fact_name! "Fact-#{uuid}"
   end
 
-  def set_context context
-    @context = context
-  end
-
-  def set_fact_name name
+  def set_fact_name! name
     @name = name
   end
 
-  def set_location file, offset, line
-    @file = fiile
-    @offset = offset
-    @line = line
+  def force_new_name! bot = nil
+    set_uuid! ::Viziwiki.new_uuid
+    if bot
+      while not (bot.lock_or_fail! self)
+        set_uuid! ::Viziwiki.new_uuid
+      end
+    end
   end
 
-  def set_edge_template nil
-    @edge_template = nil
+  def set_location file, offset, line
+    @file = file
+    @offset = offset
+    @line = line
   end
 
   def set_edge edge
@@ -63,6 +92,8 @@ class Viziwiki::Fact
   def add_role_op op
     @role_op.push op
   end
+
+
 
 
   def valid?
@@ -79,11 +110,8 @@ class Viziwiki::Fact
 
 
   def to_s
-    # if edge_template
-    #   TODO implement to_s and inspect having in account @edge_template
-    # else
+    # TODO?
     default_to_s
-    # end
   end
 
   def default_to_s
@@ -96,4 +124,26 @@ class Viziwiki::Fact
     end
     text
   end
+
+
+  # TODO refactor all this shit
+  def mediawiki_link
+    return nil unless @name
+    "[[#{@name}]]"
+  end
+
+  def fancy_mediawiki_link
+    return nil unless @name
+    Viziwiki::Fact.to_fancy_mediawiki_link @name
+  end
+
+  def self.to_fancy_mediawiki_link name
+    "<sub>[[#{name}|#]]</sub>"
+  end
+
+  def self.fancy_mediawiki_link?
+    Regexp.new "^<sub>\\[\\[.*\\]\\]<\/sub>$", Regexp::IGNORECASE
+  end
+
+
 end
